@@ -1,4 +1,5 @@
 ﻿https://github.com/okovtun/VPD_311_NP.git
+https://www.youtube.com/playlist?list=PLeqyOOqxeiIMLcjJQGQ1y0q3SAafQSMNt
 
 TODO:
 0. Изучить лекцию!!!
