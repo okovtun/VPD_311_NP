@@ -1,6 +1,8 @@
 ﻿https://github.com/okovtun/VPD_311_NP.git
 https://www.youtube.com/playlist?list=PLeqyOOqxeiIMLcjJQGQ1y0q3SAafQSMNt
 
+Standoff-365
+
 TODO:
 1. При помощи анализатора протоколов Wireshark исследовать и описать работу команды ping.
 	Например: ping 8.8.8.8;
