@@ -2,6 +2,7 @@
 #include<Windows.h>
 #include<CommCtrl.h>
 #include<cstdio>
+#include<iostream>
 #include"resource.h"
 
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -22,6 +23,9 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SendMessage(hPrefix, UDM_SETRANGE, 0, MAKELPARAM(30, 1));
 		//https://learn.microsoft.com/en-us/windows/win32/controls/udm-setrange
 		SetFocus(GetDlgItem(hwnd, IDC_IPADDRESS));
+
+		AllocConsole();
+		freopen("CONOUT$", "w", stdout);
 	}
 	break;
 	case WM_COMMAND:
@@ -50,7 +54,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			sprintf(sz_prefix, "%i", dwIPprefix);
 			SendMessage(hEditPrefix, WM_SETTEXT, 0, (LPARAM)sz_prefix);
 		}
-			break;
+		break;
 		case IDOK:
 			break;
 		case IDCANCEL:
@@ -59,7 +63,33 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_NOTIFY:
+	{
+		HWND hEditPrefix = GetDlgItem(hwnd, IDC_EDIT_PREFIX);
+		HWND hIPmask = GetDlgItem(hwnd, IDC_IPMASK);
+		//switch (((NMHDR*)lParam)->idFrom)
+		switch(LOWORD(wParam))
+		{
+		case IDC_SPIN_PREFIX:
+		{
+			std::cout << "WM_NOTIFY:IDC_SPIN_PREFIX:" << std::endl;
+			
+			DWORD dwPrefix = ((NMUPDOWN*)lParam)->iPos;
+			INT iDelta = ((NMUPDOWN*)lParam)->iDelta;
+			dwPrefix += iDelta;
+			//https://learn.microsoft.com/en-us/windows/win32/controls/udn-deltapos
+			std::cout << dwPrefix << std::endl;
+			std::cout << iDelta << std::endl;
+			DWORD dwIPmask = ~(0xFFFFFFFF >> dwPrefix);
+			//system("PAUSE");
+			SendMessage(hIPmask, IPM_SETADDRESS, 0, dwIPmask);
+		}
+		break;
+		}
+	}
+	break;
 	case WM_CLOSE:
+		FreeConsole();
 		EndDialog(hwnd, 0);
 	}
 	return FALSE;
