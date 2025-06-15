@@ -103,6 +103,8 @@ void main()
 		WSACleanup();
 		return;
 	}
+	iResult = shutdown(connect_socket, SD_SEND);
+	if (iResult == SOCKET_ERROR)PrintLastError(WSAGetLastError());
 	do
 	{
 		iResult = recv(connect_socket, recvbuffer, DEFAULT_BUFFER_LENGTH, 0);

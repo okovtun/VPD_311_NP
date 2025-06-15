@@ -13,6 +13,10 @@ https://winprog.org/tutorial/
 https://learn.microsoft.com/en-us/windows/win32/controls/udn-deltapos
 
 TODO:
+1. На Сервере должен отображаться IP-адрес и порт клиента;
+2. Обеспечить подключение нескольких клиентов к Серверу;
+
+DONE:
 1. Реализовать IP-калькулятор при помощи WPF;
 
 DONE:
