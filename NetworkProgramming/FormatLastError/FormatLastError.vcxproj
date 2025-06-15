@@ -146,7 +146,7 @@
     <ClInclude Include="FormatLastError.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PrintLastError.cpp" />
+    <ClCompile Include="FormatLastError.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
