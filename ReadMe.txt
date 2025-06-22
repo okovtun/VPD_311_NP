@@ -3,6 +3,8 @@ https://www.youtube.com/playlist?list=PLeqyOOqxeiIMLcjJQGQ1y0q3SAafQSMNt
 
 Standoff-365
 
+i80-386
+
 Win32:
 https://winprog.org/tutorial/
 

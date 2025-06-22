@@ -17,6 +17,8 @@ using namespace std;
 #define DEFAULT_PORT			"27015"
 #define DEFAULT_BUFFER_LENGTH	1500
 
+CONST CHAR g_OVERFLOW[DEFAULT_BUFFER_LENGTH] = "Sory, too many connection, try again later: ";
+
 void main()
 {
 	setlocale(LC_ALL, "Russian");
@@ -96,7 +98,7 @@ void main()
 	CHAR recvbuffer[DEFAULT_BUFFER_LENGTH] = {};
 	do
 	{
-		iResult = send(connect_socket, sendbuffer, sizeof(sendbuffer), 0);
+		iResult = send(connect_socket, sendbuffer, strlen(sendbuffer), 0);
 		if (iResult == SOCKET_ERROR)
 		{
 			PrintLastError(WSAGetLastError());
@@ -107,12 +109,18 @@ void main()
 		}
 		//iResult = shutdown(connect_socket, SD_SEND);
 		//if (iResult == SOCKET_ERROR)PrintLastError(WSAGetLastError());
+		ZeroMemory(recvbuffer, DEFAULT_BUFFER_LENGTH);
 		iResult = recv(connect_socket, recvbuffer, DEFAULT_BUFFER_LENGTH, 0);
 		if (iResult > 0)cout << "Receved bytes: " << iResult << ", Message: " << recvbuffer << endl;
 		else if (iResult == 0)cout << "Connection closing" << endl;
 		else PrintLastError(WSAGetLastError());
-
+		if (strcmp(recvbuffer, g_OVERFLOW) == 0)
+		{
+			system("PAUSE");
+			break;
+		}
 		cout << "Введите сообщение: ";
+		ZeroMemory(sendbuffer, DEFAULT_BUFFER_LENGTH);
 		SetConsoleCP(1251);
 		cin.getline(sendbuffer, DEFAULT_BUFFER_LENGTH);
 		SetConsoleCP(866);
@@ -126,4 +134,9 @@ void main()
 	closesocket(connect_socket);
 	FreeAddrInfo(result);
 	WSACleanup();
+}
+
+VOID Receive(SOCKET connect_socket)
+{
+
 }

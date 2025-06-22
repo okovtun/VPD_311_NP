@@ -18,6 +18,16 @@ using namespace std;
 #define DEFAULT_PORT			"27015"
 #define DEFAULT_BUFFER_LENGTH	1500
 
+
+CONST CHAR g_OVERFLOW[DEFAULT_BUFFER_LENGTH] = "Sory, too many connection, try again later: ";
+
+CONST INT MAX_CONNECTIONS = 3;
+SOCKET sockets[MAX_CONNECTIONS] = {};
+DWORD dwThreadIDs[MAX_CONNECTIONS] = {};
+HANDLE hThreads[MAX_CONNECTIONS] = {};
+
+VOID ClientHandler(SOCKET client_socket);
+
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -85,31 +95,81 @@ void main()
 	}
 
 	//6) Принимаем запросы на соединение от клиентов:
+	INT i = 0;
 	cout << "Waiting for clients..." << endl;
-	SOCKET client_socket = accept(listen_socket, NULL, NULL);
-	if (client_socket == INVALID_SOCKET)
+	do
 	{
-		cout << "accept() failed with ";
-		PrintLastError(WSAGetLastError());
-		closesocket(listen_socket);
-		freeaddrinfo(result);
-		WSACleanup();
-		return;
-	}
+		SOCKET client_socket = accept(listen_socket, NULL, NULL);
+		if (client_socket == INVALID_SOCKET)
+		{
+			cout << "accept() failed with ";
+			PrintLastError(WSAGetLastError());
+			closesocket(listen_socket);
+			freeaddrinfo(result);
+			WSACleanup();
+			return;
+		}
+		if (i < MAX_CONNECTIONS)
+		{
+			sockets[i] = client_socket;
+			hThreads[i] = CreateThread
+			(
+				NULL,
+				0,
+				(LPTHREAD_START_ROUTINE)ClientHandler,
+				(LPVOID)sockets[i],
+				0,
+				&dwThreadIDs[i]
+			);
+			i++;
+		}
+		else
+		{
 
+			CHAR recv_buffer[DEFAULT_BUFFER_LENGTH] = {};
+			INT iResult = recv(client_socket, recv_buffer, DEFAULT_BUFFER_LENGTH, 0);
+			cout << "ExtraClient sends: " << recv_buffer << endl;
+			send(client_socket, g_OVERFLOW, strlen(g_OVERFLOW), 0);
+			closesocket(client_socket);
+		}
+		//ClientHandler(client_socket);
+		//CreateThread()
+	} while (true);
+	WaitForMultipleObjects(MAX_CONNECTIONS, hThreads, TRUE, INFINITE);
+	for (int i = 0; i < MAX_CONNECTIONS; i++)
+	{
+		CloseHandle(hThreads[i]);
+		closesocket(sockets[i]);
+	}
+	//? Освобождение русерсов WinSock:
+	closesocket(listen_socket);
+	freeaddrinfo(result);
+	WSACleanup();
+}
+
+VOID ClientHandler(SOCKET client_socket)
+{
 	//7) Получение и отправка данных:
+	INT iResult = 0;
 	CHAR recvbuffer[DEFAULT_BUFFER_LENGTH] = {};
 	do
 	{
+		ZeroMemory(recvbuffer, DEFAULT_BUFFER_LENGTH);
 		iResult = recv(client_socket, recvbuffer, DEFAULT_BUFFER_LENGTH, 0);
 		if (iResult > 0)
 		{
 			cout << "Received Bytes: " << iResult << ", Message: " << recvbuffer << endl;
-			if (send(client_socket, recvbuffer, strlen(recvbuffer), 0) == SOCKET_ERROR)
+			for (int i = 0; i < MAX_CONNECTIONS; i++)
 			{
-				cout << "send() failed with ";
-				PrintLastError(WSAGetLastError());
-				break;
+				if (sockets[i])
+				{
+					if (send(sockets[i], recvbuffer, strlen(recvbuffer), 0) == SOCKET_ERROR)
+					{
+						cout << "send() failed with ";
+						PrintLastError(WSAGetLastError());
+						break;
+					}
+				}
 			}
 		}
 		else if (iResult == 0)cout << "Connection closing..." << endl;
@@ -120,9 +180,5 @@ void main()
 		}
 	} while (iResult > 0);
 
-	//? Освобождение русерсов WinSock:
 	closesocket(client_socket);
-	closesocket(listen_socket);
-	freeaddrinfo(result);
-	WSACleanup();
 }
